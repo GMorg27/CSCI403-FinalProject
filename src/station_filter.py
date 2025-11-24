@@ -53,4 +53,5 @@ with open(INPUT_PATH, "r", newline='', encoding="utf-8") as input_txt:
 # write (station id, city) rows to csv
 with open(OUTPUT_PATH, "w", newline='', encoding="utf-8") as output_csv:
     writer = csv.writer(output_csv)
+    writer.writerow(["id", "city"])
     writer.writerows(output_data)

@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS stations (
 );
 
 -- bulk loading
-\COPY stations FROM 'output_data/stations.csv' WITH (FORMAT CSV);
+\COPY stations FROM 'output_data/stations.csv' WITH (FORMAT CSV, HEADER);
