@@ -27,9 +27,10 @@ for chunk in chunk_reader:
     filtered_df = chunk[chunk["DATE"] >= MIN_DATE]
     filtered_df = filtered_df[filtered_df["ID"].isin(station_set)]
 
-    # convert from tenths of degrees to degrees celsius
+    # convert from tenths scale
     filtered_df["TMAX"] /= 10
     filtered_df["TMIN"] /= 10
+    filtered_df["PRCP"] /= 10
 
     # write desired columns to csv
     filtered_df.rename(
