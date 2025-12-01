@@ -22,7 +22,18 @@ CREATE TABLE IF NOT EXISTS hitting (
     PRIMARY KEY (game_id, team)
 );
 
+CREATE TABLE IF NOT EXISTS games (
+    id INTEGER PRIMARY KEY,
+    away TEXT NOT NULL,
+    home TEXT NOT NULL,
+    date DATE NOT NULL,
+    away_score INT,
+    home_score INT,
+    location TEXT
+);
+
 -- bulk loading
 \COPY stations FROM 'output_data/stations.csv' WITH (FORMAT CSV, HEADER);
 \COPY weather FROM 'output_data/weather.csv' WITH (FORMAT CSV, HEADER);
+\COPY games FROM 'output_data/games.csv' WITH (FORMAT CSV, HEADER);
 \COPY hitting FROM 'output_data/hitting.csv' WITH (FORMAT CSV, HEADER);
