@@ -40,10 +40,31 @@ CREATE TABLE IF NOT EXISTS hitting (
 -- indexing
 -- TODO
 
--- join
+-- join query
 SELECT w.date, s.city, w.temp_min, w.temp_max, w.precip, w.elevation, g.away_score, g.home_score, h.at_bats, h.hits
 FROM STATIONS AS s
 JOIN weather AS w ON w.station_id = s.id
-JOIN games AS g ON g.city = s.city AND g.date = w.date
+JOIN games AS g ON g.date = w.date AND g.city = s.city
 JOIN hitting AS h ON h.game_id = g.id
-WHERE w.temp_min IS NOT NULL AND w.temp_max IS NOT NULL;
+WHERE w.temp_min IS NOT NULL AND w.temp_max IS NOT NULL AND w.precip IS NOT NULL AND w.elevation IS NOT NULL;
+
+-- average weather data
+SELECT w.date, s.city, AVG(w.temp_min) AS temp_min, AVG(w.temp_max) AS temp_max, AVG((w.temp_min + w.temp_max) / 2) AS temp_mid,
+    AVG(w.precip) AS precip, AVG(w.elevation) AS elevation
+FROM weather AS w
+JOIN stations AS s ON s.id = w.station_id
+GROUP BY w.date, s.city;
+
+-- join query with average weather data
+WITH weather_avg AS (
+    SELECT w.date, s.city, AVG(w.temp_min) AS temp_min, AVG(w.temp_max) AS temp_max, AVG((w.temp_min + w.temp_max) / 2) AS temp_mid,
+        AVG(w.precip) AS precip, AVG(w.elevation) AS elevation
+    FROM weather AS w
+    JOIN stations AS s ON s.id = w.station_id
+    GROUP BY w.date, s.city
+)
+SELECT w.date, w.city, w.temp_min, w.temp_max, w.temp_mid, w.precip, w.elevation, g.away_score, g.home_score, h.at_bats, h.hits
+FROM weather_avg AS w
+JOIN games AS g ON g.date = w.date AND g.city = w.city
+JOIN hitting AS h on h.game_id = g.id
+WHERE w.temp_mid IS NOT NULL AND w.precip IS NOT NULL and w.elevation IS NOT NULL;
