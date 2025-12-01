@@ -70,6 +70,7 @@ JOIN hitting AS h on h.game_id = g.id
 WHERE w.temp_mid IS NOT NULL AND w.precip IS NOT NULL and w.elevation IS NOT NULL;
 
 -- final join query
+DROP VIEW results;
 CREATE VIEW results AS (
     WITH weather_avg AS (
         SELECT w.date, s.city,
@@ -84,17 +85,18 @@ CREATE VIEW results AS (
     ),
     hitting_agg AS (
         SELECT game_id,
-            SUM(at_bats)     AS at_bats,
-            SUM(hits)        AS hits,
-            SUM(walks)       AS walks,
-            SUM(strikeouts)  AS strikeouts
+            SUM(at_bats)             AS at_bats,
+            SUM(hits)                AS hits,
+            CAST(SUM(hits) AS DECIMAL) / SUM(at_bats) AS bat_avg,
+            SUM(walks)               AS walks,
+            SUM(strikeouts)          AS strikeouts
         FROM hitting
         GROUP BY game_id
     )
     SELECT w.date, w.city,
         w.temp_min, w.temp_max, w.temp_mid, w.precip, w.elevation,
         g.away_score, g.home_score,
-        h.at_bats, h.hits, h.walks, h.strikeouts
+        h.at_bats, h.hits, h.bat_avg, h.walks, h.strikeouts
     FROM weather_avg w
     JOIN games g ON g.date = w.date AND g.city = w.city
     JOIN hitting_agg h ON h.game_id = g.id
