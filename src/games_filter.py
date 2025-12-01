@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import csv
 
-INPUT_PATH = "input_data/games.csv"
+INPUT_PATH = "input_data/raw/games.csv"
 OUTPUT_PATH = "output_data/games.csv"
 
 # TODO: Update this list with the actual features you want to keep
@@ -27,6 +27,12 @@ def filter_games():
             quoting=csv.QUOTE_MINIMAL
         )
 
+        df.drop_duplicates(
+            subset=["Game"],
+            keep="first",
+            inplace=True
+        )
+
         # Convert score columns to integers (safe version)
         for col in ['away-score', 'home-score']:
             if col in df.columns:
@@ -35,6 +41,8 @@ def filter_games():
                     .fillna(0)
                     .astype(int)
                 )
+        
+        df['Location'] = df['Location'].str.split(',').str.get(0)
         
         # Filter columns, keeping only those that exist in the dataframe
         available_features = [f for f in FEATURES_TO_KEEP if f in df.columns]

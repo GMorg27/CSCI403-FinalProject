@@ -12,6 +12,15 @@ CREATE TABLE IF NOT EXISTS weather (
     elevation NUMERIC(5, 1),
     PRIMARY KEY (station_id, date)
 );
+CREATE TABLE IF NOT EXISTS games (
+    id INTEGER PRIMARY KEY,
+    away TEXT NOT NULL,
+    home TEXT NOT NULL,
+    date DATE NOT NULL,
+    away_score INT,
+    home_score INT,
+    city TEXT
+);
 CREATE TABLE IF NOT EXISTS hitting (
     at_bats INT NOT NULL,
     hits INT NOT NULL,
@@ -20,16 +29,6 @@ CREATE TABLE IF NOT EXISTS hitting (
     game_id INT NOT NULL,
     team VARCHAR(3) NOT NULL,
     PRIMARY KEY (game_id, team)
-);
-
-CREATE TABLE IF NOT EXISTS games (
-    id INTEGER PRIMARY KEY,
-    away TEXT NOT NULL,
-    home TEXT NOT NULL,
-    date DATE NOT NULL,
-    away_score INT,
-    home_score INT,
-    location TEXT
 );
 
 -- bulk loading
