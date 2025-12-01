@@ -36,3 +36,14 @@ CREATE TABLE IF NOT EXISTS hitting (
 \COPY weather FROM 'output_data/weather.csv' WITH (FORMAT CSV, HEADER);
 \COPY games FROM 'output_data/games.csv' WITH (FORMAT CSV, HEADER);
 \COPY hitting FROM 'output_data/hitting.csv' WITH (FORMAT CSV, HEADER);
+
+-- indexing
+-- TODO
+
+-- join
+SELECT w.date, s.city, w.temp_min, w.temp_max, w.precip, w.elevation, g.away_score, g.home_score, h.at_bats, h.hits
+FROM STATIONS AS s
+JOIN weather AS w ON w.station_id = s.id
+JOIN games AS g ON g.city = s.city AND g.date = w.date
+JOIN hitting AS h ON h.game_id = g.id
+WHERE w.temp_min IS NOT NULL AND w.temp_max IS NOT NULL;
