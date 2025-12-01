@@ -69,35 +69,39 @@ JOIN games AS g ON g.date = w.date AND g.city = w.city
 JOIN hitting AS h on h.game_id = g.id
 WHERE w.temp_mid IS NOT NULL AND w.precip IS NOT NULL and w.elevation IS NOT NULL;
 
+-- final join query
+CREATE VIEW results AS (
+    WITH weather_avg AS (
+        SELECT w.date, s.city,
+            AVG(w.temp_min) AS temp_min,
+            AVG(w.temp_max) AS temp_max,
+            AVG((w.temp_min + w.temp_max) / 2) AS temp_mid,
+            AVG(w.precip)   AS precip,
+            AVG(w.elevation) AS elevation
+        FROM weather AS w
+        JOIN stations AS s ON s.id = w.station_id
+        GROUP BY w.date, s.city
+    ),
+    hitting_agg AS (
+        SELECT game_id,
+            SUM(at_bats)     AS at_bats,
+            SUM(hits)        AS hits,
+            SUM(walks)       AS walks,
+            SUM(strikeouts)  AS strikeouts
+        FROM hitting
+        GROUP BY game_id
+    )
+    SELECT w.date, w.city,
+        w.temp_min, w.temp_max, w.temp_mid, w.precip, w.elevation,
+        g.away_score, g.home_score,
+        h.at_bats, h.hits, h.walks, h.strikeouts
+    FROM weather_avg w
+    JOIN games g ON g.date = w.date AND g.city = w.city
+    JOIN hitting_agg h ON h.game_id = g.id
+    WHERE w.temp_mid IS NOT NULL
+    AND w.precip IS NOT NULL
+    AND w.elevation IS NOT NULL
+);
 
--- join query with average weather data and hitting data
-WITH weather_avg AS (
-    SELECT w.date, s.city,
-           AVG(w.temp_min) AS temp_min,
-           AVG(w.temp_max) AS temp_max,
-           AVG((w.temp_min + w.temp_max) / 2) AS temp_mid,
-           AVG(w.precip)   AS precip,
-           AVG(w.elevation) AS elevation
-    FROM weather AS w
-    JOIN stations AS s ON s.id = w.station_id
-    GROUP BY w.date, s.city
-),
-hitting_agg AS (
-    SELECT game_id,
-           SUM(at_bats)     AS at_bats,
-           SUM(hits)        AS hits,
-           SUM(walks)       AS walks,
-           SUM(strikeouts)  AS strikeouts
-    FROM hitting
-    GROUP BY game_id
-)
-SELECT w.date, w.city,
-       w.temp_min, w.temp_max, w.temp_mid, w.precip, w.elevation,
-       g.away_score, g.home_score,
-       h.at_bats, h.hits, h.walks, h.strikeouts
-FROM weather_avg w
-JOIN games g      ON g.date = w.date AND g.city = w.city
-JOIN hitting_agg h ON h.game_id = g.id
-WHERE w.temp_mid IS NOT NULL
-  AND w.precip IS NOT NULL
-  AND w.elevation IS NOT NULL;
+-- copy results to csv
+\COPY (SELECT * FROM results) TO 'output_data/results.csv' WITH (FORMAT CSV, HEADER);
