@@ -26,6 +26,15 @@ def filter_games():
             engine="python",
             quoting=csv.QUOTE_MINIMAL
         )
+
+        # Convert score columns to integers (safe version)
+        for col in ['away-score', 'home-score']:
+            if col in df.columns:
+                df[col] = (
+                    pd.to_numeric(df[col], errors='coerce')
+                    .fillna(0)
+                    .astype(int)
+                )
         
         # Filter columns, keeping only those that exist in the dataframe
         available_features = [f for f in FEATURES_TO_KEEP if f in df.columns]
@@ -47,4 +56,3 @@ def filter_games():
 
 if __name__ == "__main__":
     filter_games()
-
