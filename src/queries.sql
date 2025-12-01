@@ -77,28 +77,32 @@ CREATE VIEW results AS (
             AVG(w.temp_min) AS temp_min,
             AVG(w.temp_max) AS temp_max,
             AVG((w.temp_min + w.temp_max) / 2) AS temp_mid,
-            AVG(w.precip)   AS precip,
+            AVG(w.precip)    AS precip,
             AVG(w.elevation) AS elevation
         FROM weather AS w
         JOIN stations AS s ON s.id = w.station_id
         GROUP BY w.date, s.city
     ),
+    game_agg AS (
+        SELECT id, date, city, home_score + away_score AS score
+        FROM games
+    ),
     hitting_agg AS (
         SELECT game_id,
-            SUM(at_bats)             AS at_bats,
-            SUM(hits)                AS hits,
+            SUM(at_bats) AS at_bats,
+            SUM(hits)    AS hits,
             CAST(SUM(hits) AS DECIMAL) / SUM(at_bats) AS bat_avg,
-            SUM(walks)               AS walks,
-            SUM(strikeouts)          AS strikeouts
+            SUM(walks)      AS walks,
+            SUM(strikeouts) AS strikeouts
         FROM hitting
         GROUP BY game_id
     )
     SELECT w.date, w.city,
         w.temp_min, w.temp_max, w.temp_mid, w.precip, w.elevation,
-        g.away_score, g.home_score,
+        g.score,
         h.at_bats, h.hits, h.bat_avg, h.walks, h.strikeouts
     FROM weather_avg w
-    JOIN games g ON g.date = w.date AND g.city = w.city
+    JOIN game_agg g ON g.date = w.date AND g.city = w.city
     JOIN hitting_agg h ON h.game_id = g.id
     WHERE w.temp_mid IS NOT NULL
     AND w.precip IS NOT NULL
